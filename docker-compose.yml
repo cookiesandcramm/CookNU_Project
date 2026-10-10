@@ -1,0 +1,35 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+    image: cooknu-frontend:${TAG:-local}
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  proxy:
+    build:
+      context: ./proxy
+    image: cooknu-proxy:${TAG:-local}
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      frontend:
+        condition: service_healthy
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+networks:
+  app-network:
+    driver: bridge

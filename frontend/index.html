@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cook'N U</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script>emailjs.init("Yz0p_n1PrWm0VYN3s");</script>
+
+
+<script type="module" src="app.js"></script>
+
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <button class="nav-btn" id="burgerBtn" style="display:none"><i data-lucide="menu" class="icon-md"></i></button>
+  <a class="nav-logo" id="logoBtn">
+    <div class="nav-logo-icon">
+  <img src="cooknulogo.png" style="width:34px;height:34px;border-radius:50%;object-fit:cover">
+</div>
+    <span class="nav-logo-text">Cook'N U</span>
+  </a>
+  <div class="nav-search-wrap">
+    <i data-lucide="search" class="nav-search-icon icon-sm"></i>
+    <input class="nav-search" id="navSearch" placeholder="Search Recipes" autocomplete="off" name="search" type="search">
+  </div>
+  <div class="nav-actions">
+    <button class="nav-btn" id="addBtn" title="Add Recipe"><i data-lucide="plus" class="icon-md"></i></button>
+    <button class="nav-btn" id="notifBtn" title="Notifications">
+      <i data-lucide="bell" class="icon-md"></i>
+      <span class="notif-dot" id="notifDot" style="display:none"></span>
+    </button>
+    <button class="nav-btn" id="profileBtn" title="Profile"><i data-lucide="user" class="icon-md" id="profileBtnIcon"></i></button>
+  </div>
+</nav>
+
+<!-- AUTH PAGE -->
+<div id="page-auth" style="position:fixed;inset:0;z-index:500;display:none;align-items:center;justify-content:center;">
+  <div class="auth-bg">
+  <div class="auth-slide active" style="background-image:url('photo1.jpg')"></div>
+  <div class="auth-slide" style="background-image:url('photo2.jpg')"></div>
+  <div class="auth-slide" style="background-image:url('photo3.jpg')"></div>
+  <div class="auth-slide" style="background-image:url('photo3.jpg')"></div>
+  <div class="auth-bg-overlay"></div>
+</div>
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">
+  <img src="cooknulogo.png" style="width:52px;height:52px;border-radius:50%;object-fit:cover">
+</div>
+      <div class="auth-logo-text">Welcome to Cook'N U!</div>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" data-tab="signin">Sign In</button>
+      <button class="auth-tab" data-tab="signup">Sign Up</button>
+    </div>
+    <div class="auth-form active" id="form-signin">
+      <div id="signin-step1">
+        <div class="auth-error" id="signin-error"></div>
+        <div class="auth-success" id="signin-success" style="display:none;color:#2e9b57;font-size:12px;margin-bottom:10px;padding:8px 10px;background:rgba(46,155,87,0.08);border-radius:6px;"></div>
+        <input class="auth-input" id="signin-email" type="email" placeholder="Email address">
+        <input class="auth-input" id="signin-password" type="password" placeholder="Password">
+        <button class="auth-btn" id="signinBtn">Sign In</button>
+        <button type="button" id="forgotPasswordBtn" style="background:none;border:none;color:var(--text-light);font-size:12px;cursor:pointer;margin-top:10px;display:block;width:100%;text-align:center;text-decoration:underline;">Forgot Password?</button>
+      </div>
+    </div>
+    <div class="auth-form" id="form-signup">
+      <!-- STEP 1: signup fields -->
+      <div id="signup-fields-step">
+        <div class="auth-error" id="signup-error"></div>
+        <input class="auth-input" id="signup-name" type="text" placeholder="Your name">
+        <input class="auth-input" id="signup-email" type="email" placeholder="Email address">
+        <input class="auth-input" id="signup-password" type="password" placeholder="Password">
+        <div id="pass-hints" style="font-size:11px;color:var(--text-light);margin:-4px 0 12px;line-height:2;padding:0 2px">
+          <span id="hint-len">&#9675; At least 6 characters</span><br>
+          <span id="hint-cap">&#9675; At least 1 capital letter</span><br>
+          <span id="hint-sym">&#9675; At least 1 symbol (! @ # $ ...)</span>
+        </div>
+        <button class="auth-btn" id="signupBtn">Create Account</button>
+      </div>
+      <!-- STEP 2: OTP (shown after clicking Create Account) -->
+      <div id="signup-otp-step" style="display:none">
+        <div class="otp-info">We sent a 6-digit code to<br><strong id="otp-email-display"></strong></div>
+        <div class="auth-error" id="signup-otp-error"></div>
+        <div class="otp-inputs">
+          <input class="otp-digit" maxlength="1" inputmode="numeric" id="signupOtp0">
+          <input class="otp-digit" maxlength="1" inputmode="numeric" id="signupOtp1">
+          <input class="otp-digit" maxlength="1" inputmode="numeric" id="signupOtp2">
+          <input class="otp-digit" maxlength="1" inputmode="numeric" id="signupOtp3">
+          <input class="otp-digit" maxlength="1" inputmode="numeric" id="signupOtp4">
+          <input class="otp-digit" maxlength="1" inputmode="numeric" id="signupOtp5">
+        </div>
+        <div class="otp-timer" id="otpTimerEl"></div>
+        <div class="otp-resend">Didn&#39;t receive it? <button id="signupOtpResendBtn" disabled>Resend code</button></div>
+        <button class="auth-btn" id="signupOtpVerifyBtn">Verify &amp; Create Account</button>
+        <button class="otp-back" id="otpBackBtn">&#8592; Back to Sign Up</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOME PAGE -->
+<div id="page-home" class="page">
+  <div class="hero">
+    <div class="hero-slides" id="heroSlides">
+      <div class="hero-slide active" style="background-image:url('photo1.jpg')"></div>
+      <div class="hero-slide" style="background-image:url('photo2.jpg')"></div>
+      <div class="hero-slide" style="background-image:url('photo3.jpg')"></div>
+      <div class="hero-slide" style="background-image:url('photo3.jpg')"></div>
+    </div>
+    <div class="hero-gradient"></div>
+    <div class="hero-content">
+      <div class="hero-label">Be the best cook</div>
+      <h1 class="hero-title">Delicious recipes<br>for every taste</h1>
+      <p class="hero-sub">Find easy, healthy, mouth-watering recipes made for real life and real ingredients</p>
+      <button class="btn-browse" id="browseCatBtn"><i data-lucide="grid-2x2" class="icon-sm"></i> Browse Categories</button>
+    </div>
+  </div>
+  <div class="section-divider"></div>
+  <div class="category-section" id="categorySection">
+    <div class="category-bar" id="categoryBar">
+      <div class="cat-dropdown-wrap">
+        <button class="cat-dropdown-btn" id="catDropBtn"><i data-lucide="layers" class="icon-sm"></i> CATEGORY <i data-lucide="chevron-down" class="icon-sm"></i></button>
+        <div class="cat-dropdown-menu" id="catDropMenu">
+          <div class="cat-option" data-cat="Breakfast"><i data-lucide="sunrise" class="icon-sm"></i>Breakfast</div>
+          <div class="cat-option" data-cat="Lunch"><i data-lucide="sun" class="icon-sm"></i>Lunch</div>
+          <div class="cat-option" data-cat="Dinner"><i data-lucide="moon" class="icon-sm"></i>Dinner</div>
+          <div class="cat-option" data-cat="Snacks"><i data-lucide="cookie" class="icon-sm"></i>Snacks</div>
+          <div class="cat-option" data-cat="Dessert"><i data-lucide="cake" class="icon-sm"></i>Dessert</div>
+          <div class="cat-option" data-cat="Drinks"><i data-lucide="coffee" class="icon-sm"></i>Drinks</div>
+          <div class="cat-option" data-cat="Chicken"><i data-lucide="drumstick" class="icon-sm"></i>Chicken</div>
+          <div class="cat-option" data-cat="Beef"><i data-lucide="beef" class="icon-sm"></i>Beef</div>
+          <div class="cat-option" data-cat="Seafood"><i data-lucide="fish" class="icon-sm"></i>Seafood</div>
+          <div class="cat-option" data-cat="Vegetarian"><i data-lucide="leaf" class="icon-sm"></i>Vegetarian</div>
+        </div>
+      </div>
+      <div id="activeCatTags"></div>
+    </div>
+  </div>
+  <div class="recipes-section">
+    <div id="searchResultsHeader" class="hidden search-results-header">
+      <div class="search-results-badge"><i data-lucide="search" class="icon-sm"></i><span id="searchResultsLabel">SEARCH RESULTS</span></div>
+    </div>
+    <div class="recipes-grid" id="recipesGrid"></div>
+    <div class="empty-state hidden" id="emptyState">
+      <div class="empty-state-icon"><i data-lucide="chef-hat" style="width:48px;height:48px"></i></div>
+      <div class="empty-state-text">No recipes found</div>
+    </div>
+  </div>
+  <!-- SITE FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <div class="footer-logo-icon">
+  <img src="cooknulogo.png" style="width:40px;height:40px;border-radius:50%;object-fit:cover">
+</div>
+          <span class="footer-logo-text">Cook&#39;N U</span>
+        </div>
+        <p class="footer-tagline">A community-driven recipe platform where every cook has a story to share.</p>
+        <div class="footer-social">
+         <!-- <button class="footer-social-btn" title="Facebook"> 
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          </button>-->
+        <!--  <button class="footer-social-btn" title="Instagram"> 
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          </button>-->
+        <!--  <button class="footer-social-btn" title="X / Twitter"> 
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="4" x2="20" y2="20"/><line x1="20" y1="4" x2="4" y2="20"/></svg>
+          </button>-->
+        </div>
+      </div>
+      <div>
+        <div class="footer-links-title">Quick Links</div>
+        <button class="footer-link" onclick="openPanel('about')">About Us</button>
+        <button class="footer-link" onclick="openPanel('privacy')">Privacy Policy</button>
+        <button class="footer-link" onclick="openPanel('terms')">Terms of Service</button>
+        <button class="footer-link" onclick="openPanel('contact')">Contact Us</button>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      &copy; 2025 Cook&#39;N U &mdash; Made with <span style="color:var(--accent)">&#9829;</span> for food lovers everywhere.
+    </div>
+  </footer>
+</div>
+
+<!-- RECIPE DETAIL PAGE -->
+<div id="page-detail" class="page">
+  <button class="detail-back-btn" id="detailBackBtn"><i data-lucide="arrow-left" class="icon-sm"></i></button>
+  <div class="detail-hero">
+    <img class="detail-hero-img" id="detailImg" src="" alt="">
+    <div class="detail-hero-overlay"></div>
+    <div class="detail-author">
+      <div class="detail-author-avatar" id="detailAuthorAvatar"></div>
+      <div class="detail-author-name" id="detailAuthorName"></div>
+    </div>
+    <button class="detail-heart-btn" id="detailHeartBtn"><i data-lucide="heart" style="width:28px;height:28px;fill:currentColor"></i></button>
+    <button id="detailEditBtn" class="detail-edit-btn hidden">
+  <i data-lucide="pencil"></i>
+</button>
+    <button class="detail-delete-btn hidden" id="detailDeleteBtn"><i data-lucide="trash-2" style="width:24px;height:24px"></i></button>
+  </div>
+  <div class="detail-body">
+    <h2 class="detail-title" id="detailTitle"></h2>
+    <div class="detail-meta-row" id="detailMeta"></div>
+    <div class="detail-card">
+      <div class="detail-card-title"><i data-lucide="list" class="icon-md"></i> Ingredients</div>
+      <div id="detailIngredients"></div>
+    </div>
+    <div class="detail-card">
+      <div class="detail-card-title"><i data-lucide="book-open" class="icon-md"></i> Instructions</div>
+      <div class="detail-instructions" id="detailInstructions"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE RECIPE PAGE -->
+<div id="page-create" class="page">
+  <button class="detail-back-btn" id="createBackBtn"><i data-lucide="arrow-left" class="icon-sm"></i></button>
+<div class="create-header">
+  <div id="createPageTitle" class="create-badge">
+    Create New Recipe
+  </div>
+</div>  
+<div class="create-form">
+    <div class="create-card">
+      <div class="form-row">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label"><i data-lucide="type" class="icon-sm"></i> Title</label>
+          <input class="form-input" id="newTitle" placeholder="Enter Recipe Title">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label"><i data-lucide="tag" class="icon-sm"></i> Category</label>
+          <input type="hidden" id="newCategory" value="">
+          <div class="cat-pill-grid" id="catPillGrid">
+            <button type="button" class="cat-pill" data-cat="Breakfast">Breakfast</button>
+            <button type="button" class="cat-pill" data-cat="Lunch">Lunch</button>
+            <button type="button" class="cat-pill" data-cat="Dinner">Dinner</button>
+            <button type="button" class="cat-pill" data-cat="Snacks">Snacks</button>
+            <button type="button" class="cat-pill" data-cat="Dessert">Dessert</button>
+            <button type="button" class="cat-pill" data-cat="Drinks">Drinks</button>
+            <button type="button" class="cat-pill" data-cat="Chicken">Chicken</button>
+            <button type="button" class="cat-pill" data-cat="Beef">Beef</button>
+            <button type="button" class="cat-pill" data-cat="Seafood">Seafood</button>
+            <button type="button" class="cat-pill" data-cat="Vegetarian">Vegetarian</button>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i data-lucide="list-checks" class="icon-sm"></i> Ingredients</label>
+        <textarea class="form-textarea" id="newIngredients" placeholder="1 cup of rice&#10;2 cloves of garlic&#10;3 tbsp soy sauce"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i data-lucide="book-open" class="icon-sm"></i> Instructions</label>
+        <textarea class="form-textarea" id="newInstructions" placeholder="Describe the cooking steps…" style="min-height:110px"></textarea>
+      </div>
+      <div class="form-meta">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label"><i data-lucide="clock" class="icon-sm"></i> Prep Time</label>
+          <div class="prep-time-wrap">
+            <input class="form-input" id="newPrepTime" placeholder="e.g. 30" inputmode="numeric">
+            <span class="prep-mins-badge">mins</span>
+          </div>
+          <div class="form-error" id="prepTimeError">Numbers only</div>
+          <div class="form-hint">Numbers only</div>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label"><i data-lucide="users" class="icon-sm"></i> Servings</label>
+          <div class="prep-time-wrap">
+            <input class="form-input" id="newServings" placeholder="e.g. 4" inputmode="numeric">
+          </div>
+          <div class="form-error" id="servingsError">Numbers only</div>
+          <div class="form-hint">Numbers only</div>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label"><i data-lucide="image" class="icon-sm"></i> Image</label>
+          <div class="image-upload-area" id="imageUploadArea">
+            <i data-lucide="upload-cloud" class="icon-md" id="uploadIcon"></i>
+            <span id="uploadLabel" style="font-size:11px">Upload Photo</span>
+            <input type="file" accept="image/*" id="imageFileInput">
+            <img class="image-preview hidden" id="imagePreview" alt="">
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="btn-publish" id="publishBtn"><i data-lucide="send" class="icon-sm"></i> Publish Recipe</button>
+  </div>
+</div>
+
+<!-- PROFILE PAGE -->
+<div id="page-profile" class="page">
+  <div class="profile-header">
+    <div class="profile-top">
+      <div class="profile-avatar-wrap" id="profileAvatarWrap">
+        <div class="profile-avatar" id="profileAvatarEl"><i data-lucide="user" style="width:32px;height:32px"></i></div>
+        <div class="profile-avatar-edit-hint"><i data-lucide="pencil" class="icon-sm"></i></div>
+      </div>
+      <div class="profile-info">
+        <div class="profile-name" id="profileNameEl"></div>
+        <div class="profile-stats" id="profileStatsEl"></div>
+      </div>
+    </div>
+    <div class="profile-tabs">
+      <button class="profile-tab active" data-tab="recipes" id="tabMyRecipes">MY RECIPES</button>
+      <button class="profile-tab" data-tab="favorites" id="tabFavorites">FAVORITES</button>
+    </div>
+  </div>
+  <div class="profile-grid" id="profileGrid"></div>
+</div>
+
+<!-- NOTIFICATIONS POPUP -->
+<div class="notif-popup" id="notifPopup">
+  <div class="notif-popup-header"><i data-lucide="bell" class="icon-sm"></i> Notifications</div>
+  <div id="notifList"><div class="notif-empty">No notifications yet</div></div>
+</div>
+
+<!-- SIDE DRAWER -->
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<div class="drawer" id="sideDrawer">
+  <div class="drawer-header">
+    <div class="drawer-profile">
+      <div class="drawer-avatar" id="drawerAvatar"><i data-lucide="user" style="width:22px;height:22px"></i></div>
+      <div class="drawer-name" id="drawerName">My Profile</div>
+    </div>
+    <button class="drawer-close" id="drawerClose"><i data-lucide="x" class="icon-sm"></i></button>
+  </div>
+  <div class="drawer-menu">
+    <button class="drawer-item" id="drawerHome"><i data-lucide="home" class="icon-md"></i> HOME</button>
+    <button class="drawer-item" id="drawerProfile"><i data-lucide="user" class="icon-md"></i> MY PROFILE</button>
+    <button class="drawer-item" id="drawerMyRecipes"><i data-lucide="chef-hat" class="icon-md"></i> MY RECIPES</button>
+    <button class="drawer-item" id="drawerFavorites"><i data-lucide="heart" class="icon-md"></i> FAVORITES</button>
+    <button class="drawer-item danger" id="drawerLogout"><i data-lucide="log-out" class="icon-md"></i> LOG OUT</button>
+  </div>
+</div>
+
+<!-- EDIT PROFILE POPUP -->
+<div class="edit-profile-overlay" id="editProfileOverlay">
+  <div class="edit-profile-card">
+    <div class="edit-profile-title">Edit Profile</div>
+    <div class="edit-avatar-zone">
+      <div class="edit-avatar-preview" id="editAvatarPreview">
+        <i data-lucide="user" style="width:32px;height:32px"></i>
+        <div class="edit-avatar-overlay"><i data-lucide="camera" class="icon-sm"></i></div>
+        <input type="file" accept="image/*" id="editAvatarInput">
+      </div>
+      <div style="font-size:12px;color:var(--text-light)">Click to change photo</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" style="font-size:12.5px"><i data-lucide="user" class="icon-sm"></i> Display Name</label>
+      <input class="form-input" id="editNameInput" placeholder="Your name">
+    </div>
+    <button class="edit-save-btn" id="editSaveBtn">Save Changes</button>
+    <button class="edit-cancel-btn" id="editCancelBtn">Cancel</button>
+  </div>
+</div>
+
+<!-- DELETE CONFIRMATION -->
+<div class="edit-profile-overlay" id="deletePopup">
+  <div class="edit-profile-card">
+    <div class="edit-profile-title">Delete Recipe?</div>
+    <div style="text-align:center;font-size:14px;color:var(--text-mid);margin-bottom:22px;">Are you sure you want to delete this post?</div>
+    <button class="btn-browse" id="confirmDeleteBtn" style="width:100%;justify-content:center;">Yes, Delete</button>
+    <button class="edit-cancel-btn" id="cancelDeleteBtn">No, Keep It</button>
+  </div>
+</div>
+
+<div id="signupSuccessPopup" class="success-popup-overlay">
+
+  <div class="success-popup-card">
+
+    <div class="success-popup-icon">
+      <i data-lucide="check"></i>
+    </div>
+
+    <div class="success-popup-title">
+      Account Created!
+    </div>
+
+    <div class="success-popup-text">
+      Your account was successfully created.<br>
+      You may now log in.
+    </div>
+
+    <button id="successPopupBtn" class="success-popup-btn">
+      Continue
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- ABOUT US PANEL -->
+<div class="panel-overlay" id="panel-about">
+  <div class="panel-card">
+    <div class="panel-header">
+      <span class="panel-title">About Us</span>
+      <button class="panel-close" onclick="closePanel('about')">&#10005;</button>
+    </div>
+    <div class="panel-body">
+      <h3>What is Cook&#39;N U?</h3>
+      <p>Cook&#39;N U is a vibrant, community-driven recipe platform built for food lovers of all skill levels. Whether you&#39;re a seasoned home chef or just starting to experiment in the kitchen, Cook&#39;N U is your go-to space to discover, share, and celebrate food.</p>
+      <h3>Our Mission</h3>
+      <p>We believe that great food brings people together. Our mission is to make the joy of cooking accessible to everyone — by creating a welcoming space where real recipes from real people are shared freely, without the fluff.</p>
+      <h3>What You Can Do Here</h3>
+      <ul>
+        <li>Browse community-submitted recipes across every category</li>
+        <li>Share your own creations and get hearts from fellow food lovers</li>
+        <li>Save your favorite recipes and build your personal cookbook</li>
+        <li>Connect with a growing community that loves food as much as you do</li>
+      </ul>
+      <h3>Our Story</h3>
+      <p>Cook&#39;N U was born out of a shared love for good food and the frustration of not having a single, focused place where everyday cooks could shine. We set out to build something simple, beautiful, and truly community-first.</p>
+      <p>From sinigang to souffl&#233;, from late-night snacks to weekend feasts — every recipe on this platform has a person behind it, and we&#39;re proud to give them a stage.</p>
+      <div class="creators-section">
+        <div class="creators-title">&#10022; Meet the Creators &#10022;</div>
+        <div class="creators-grid">
+          <div class="creator-card">
+            <div class="creator-avatar">LR</div>
+            <div class="creator-name">Lyanna Ramos</div>
+            <div class="creator-role">Co-Founder</div>
+          </div>
+          <div class="creator-card">
+            <div class="creator-avatar">RM</div>
+            <div class="creator-name">Rhian Mortega</div>
+            <div class="creator-role">Co-Founder</div>
+          </div>
+          <div class="creator-card">
+            <div class="creator-avatar">CR</div>
+            <div class="creator-name">Caitlin Reyes</div>
+            <div class="creator-role">Co-Founder</div>
+          </div>
+          <div class="creator-card">
+            <div class="creator-avatar">HG</div>
+            <div class="creator-name">Heave Gavino</div>
+            <div class="creator-role">Co-Founder</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRIVACY POLICY PANEL -->
+<div class="panel-overlay" id="panel-privacy">
+  <div class="panel-card">
+    <div class="panel-header">
+      <span class="panel-title">Privacy Policy</span>
+      <button class="panel-close" onclick="closePanel('privacy')">&#10005;</button>
+    </div>
+    <div class="panel-body">
+      <p style="font-size:11.5px;color:var(--text-light)">Last updated: January 2025</p>
+      <h3>Information We Collect</h3>
+      <p>When you create an account, we collect your name and email address. When you post a recipe, we store your recipe content, photos, and cooking details. We also collect general usage data to improve the platform.</p>
+      <h3>How We Use Your Information</h3>
+      <ul>
+        <li>To create and manage your Cook&#39;N U account</li>
+        <li>To display your recipes and profile to other community members</li>
+        <li>To send you verification codes and important account notifications</li>
+        <li>To improve and personalize your experience on the platform</li>
+      </ul>
+      <h3>Data Storage</h3>
+      <p>Your data is stored securely using Google Firebase, which employs industry-standard encryption and security practices.</p>
+      <h3>Sharing Your Data</h3>
+      <p>We do not sell, trade, or share your personal information with third parties. Your email address is only used for account authentication and will never be displayed publicly.</p>
+      <h3>Your Rights</h3>
+      <p>You may delete your recipes or account at any time. If you have any questions about your data, please reach out to us through our Contact page.</p>
+      <h3>Cookies</h3>
+      <p>Cook&#39;N U uses minimal browser storage only to keep you logged in. We do not use tracking cookies or third-party advertising cookies.</p>
+    </div>
+  </div>
+</div>
+
+<!-- TERMS OF SERVICE PANEL -->
+<div class="panel-overlay" id="panel-terms">
+  <div class="panel-card">
+    <div class="panel-header">
+      <span class="panel-title">Terms of Service</span>
+      <button class="panel-close" onclick="closePanel('terms')">&#10005;</button>
+    </div>
+    <div class="panel-body">
+      <p style="font-size:11.5px;color:var(--text-light)">Effective: January 2025</p>
+      <h3>1. Acceptance of Terms</h3>
+      <p>By creating an account on Cook&#39;N U, you agree to these Terms of Service. If you do not agree, please do not use the platform.</p>
+      <h3>2. User Accounts</h3>
+      <p>You are responsible for maintaining the security of your account. You must provide a valid email address and must not impersonate another person.</p>
+      <h3>3. Content Guidelines</h3>
+      <ul>
+        <li>Only post recipes and food-related content</li>
+        <li>Do not post content that is offensive, harmful, or misleading</li>
+        <li>Ensure any photos you upload are yours or that you have rights to use them</li>
+        <li>Do not plagiarize recipes — give credit where it&#39;s due</li>
+      </ul>
+      <h3>4. Community Standards</h3>
+      <p>Cook&#39;N U is a respectful, inclusive community. Harassment, hate speech, or disruptive behavior will result in immediate account suspension.</p>
+      <h3>5. Intellectual Property</h3>
+      <p>You retain ownership of any recipes you post. By sharing on Cook&#39;N U, you grant us a non-exclusive license to display your content on the platform.</p>
+      <h3>6. Termination</h3>
+      <p>We reserve the right to suspend or delete accounts that violate these terms. You may also delete your own account at any time from your profile settings.</p>
+    </div>
+  </div>
+</div>
+
+<!-- CONTACT US PANEL -->
+<div class="panel-overlay" id="panel-contact">
+  <div class="panel-card">
+    <div class="panel-header">
+      <span class="panel-title">Contact Us</span>
+      <button class="panel-close" onclick="closePanel('contact')">&#10005;</button>
+    </div>
+    <div class="panel-body">
+      <h3>Get in Touch</h3>
+      <p>Have a question, suggestion, or just want to say hello? Fill out the form below and we&#39;ll get back to you as soon as possible.</p>
+      <div id="contactForm">
+        <input class="auth-input" id="contactName" type="text" placeholder="Your name" style="margin-bottom:10px">
+        <input class="auth-input" id="contactEmail" type="email" placeholder="Your email address" style="margin-bottom:10px">
+        <select class="auth-input" id="contactSubject" style="margin-bottom:10px;cursor:pointer">
+          <option value="" disabled selected>Select a topic...</option>
+          <option>General Inquiry</option>
+          <option>Bug Report</option>
+          <option>Feature Request</option>
+          <option>Account Issue</option>
+          <option>Content Concern</option>
+          <option>Other</option>
+        </select>
+        <textarea class="contact-textarea" id="contactMessage" placeholder="Tell us more..."></textarea>
+        <button class="contact-send-btn" id="contactSendBtn">Send Message</button>
+      </div>
+      <div class="contact-success" id="contactSuccess">
+        <div class="contact-success-icon">&#10003;</div>
+        <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--brown-dark);margin-bottom:8px">Message Sent!</div>
+        <p>Thanks for reaching out. We&#39;ll reply within 1-2 business days.</p>
+        <button class="edit-cancel-btn" id="contactResetBtn" style="margin-top:12px">Send Another</button>
+      </div>
+      <div style="margin-top:22px;padding-top:16px;border-top:1px solid var(--cream)">
+        <div style="font-size:11px;color:var(--text-light);margin-bottom:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase">Other ways to reach us</div>
+        <div style="font-size:13px;color:var(--text-mid);margin-bottom:6px">&#9993; hello@cooknu.app</div>
+        <div style="font-size:13px;color:var(--text-mid)">&#127987; Philippines</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="ui.js" defer></script>
+
+</body>
+</html>
