@@ -50,7 +50,7 @@ pipeline {
                 sh '''
                     set -eu
                     for attempt in $(seq 1 15); do
-                      if curl --fail --silent http://localhost:8080/ > /dev/null; then
+                      if curl --fail --silent http://host.docker.internal:8080/ > /dev/null; then
                         echo "Frontend is responding through the reverse proxy."
                         exit 0
                       fi
