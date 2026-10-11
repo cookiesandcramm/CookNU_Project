@@ -1,0 +1,131 @@
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+    image: cooknu-frontend:${TAG:-local}
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # ---- Backend modules (Node.js 22) -------------------------------------------
+  # Only the proxy publishes a port; these are reachable on app-network only.
+  auth-service:
+    build:
+      context: ./auth-service
+      target: production
+    image: cooknu-auth-service:${TAG:-local}
+    restart: unless-stopped
+    environment:
+      PORT: 3001
+      DB_HOST: database
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set in .env}
+      BUILD_TAG: ${TAG:-local}
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  recipe-service:
+    build:
+      context: ./recipe-service
+      target: production
+    image: cooknu-recipe-service:${TAG:-local}
+    restart: unless-stopped
+    environment:
+      PORT: 3002
+      DB_HOST: database
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set in .env}
+      BUILD_TAG: ${TAG:-local}
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  notification-service:
+    build:
+      context: ./notification-service
+      target: production
+    image: cooknu-notification-service:${TAG:-local}
+    restart: unless-stopped
+    environment:
+      PORT: 3003
+      DB_HOST: database
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set in .env}
+      BUILD_TAG: ${TAG:-local}
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  proxy:
+    build:
+      context: ./proxy
+    image: cooknu-proxy:${TAG:-local}
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      frontend:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+      recipe-service:
+        condition: service_healthy
+      notification-service:
+        condition: service_healthy
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # ---- Database -----------------------------------------------------------------
+  # Schema + seed data are baked into the image (db/init.sql). Data lives in the
+  # named volume "postgres-data", so it survives restarts and redeployments.
+  # No "ports:" on purpose: the database is never exposed to the host.
+  database:
+    build:
+      context: ./db
+    image: cooknu-db:${TAG:-local}
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
