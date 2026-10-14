@@ -1,11 +1,14 @@
 pipeline {
     agent any
 
-    environment {
-        // Jenkins assigns BUILD_NUMBER automatically; use it to tag each build.
-        TAG = "${BUILD_NUMBER}"
-        COMPOSE_FILE = "docker-compose.yml"
-    }
+   environment {
+    TAG = "${BUILD_NUMBER}"
+    COMPOSE_FILE = "docker-compose.yml"
+
+    POSTGRES_DB = 'cooknu_db'
+    POSTGRES_USER = 'cooknu_user'
+    POSTGRES_PASSWORD = credentials('cooknu-postgres-password')
+}
 
     triggers {
         // Poll Git every 2 minutes as a fallback if a webhook is not available.
