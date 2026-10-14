@@ -911,7 +911,6 @@ async function toggleHeartDetail(recipeId, hb) {
 document.getElementById('detailEditBtn').addEventListener('click', () => {
 
   if (!currentRecipe) return;
-s
   editingRecipeId = currentRecipe.id;
 
   document.getElementById('newTitle').value =
