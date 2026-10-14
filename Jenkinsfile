@@ -35,12 +35,16 @@ pipeline {
                 '''
             }
         }
-
-        stage('Build Images') {
-            steps {
-                sh 'TAG=$TAG docker compose -f "$COMPOSE_FILE" build'
-            }
-        }
+stage('Build Images') {
+    steps {
+        sh '''
+            set -eu
+            sed "s/BUILD_NUMBER/${BUILD_NUMBER}/g" frontend/index.html > frontend/index.html.tmp
+            mv frontend/index.html.tmp frontend/index.html
+            TAG=$TAG docker compose -f "$COMPOSE_FILE" build
+        '''
+    }
+}
 
         stage('Deploy') {
             steps {
