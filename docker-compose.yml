@@ -13,6 +13,27 @@ services:
       timeout: 3s
       retries: 3
 
+  backend:
+    build:
+      context: ./backend
+    image: cooknu-backend:${TAG:-local}
+    restart: unless-stopped
+    environment:
+      DB_HOST: database
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
   proxy:
     build:
       context: ./proxy
@@ -22,6 +43,8 @@ services:
       - "8080:80"
     depends_on:
       frontend:
+        condition: service_healthy
+      backend:
         condition: service_healthy
     networks:
       - app-network
