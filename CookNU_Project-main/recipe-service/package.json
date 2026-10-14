@@ -1,0 +1,15 @@
+{
+  "name": "cooknu-recipe-service",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cook'N U recipe service (recipes, search, hearts, favorites)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test \"tests/**/*.test.js\""
+  },
+  "engines": { "node": ">=22" },
+  "dependencies": {
+    "pg": "8.13.1"
+  }
+}

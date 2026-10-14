@@ -1,0 +1,15 @@
+{
+  "name": "cooknu-auth-service",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cook'N U authentication service (register, login, profile)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test \"tests/**/*.test.js\""
+  },
+  "engines": { "node": ">=22" },
+  "dependencies": {
+    "pg": "8.13.1"
+  }
+}
