@@ -278,3 +278,5 @@ Automatic triggering, comprehensive automated tests that block deployment, datab
 ## Repository
 
 GitHub: https://github.com/cookiesandcramm/CookNU_Project
+
+<!-- Jenkins automatic trigger verification -->
