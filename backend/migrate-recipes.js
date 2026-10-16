@@ -1,4 +1,3 @@
-
 const fs = require("fs");
 const { Pool } = require("pg");
 
@@ -109,3 +108,4 @@ migrate().catch((error) => {
   console.error(error.message);
   process.exitCode = 1;
 });
+
