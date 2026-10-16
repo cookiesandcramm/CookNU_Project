@@ -244,6 +244,12 @@ The following checks should be completed and documented before final submission:
 
 **Current limitation:** The existing Test stage checks frontend files and HTML references. These checks should not be described as a complete automated test suite. The failing-test gate, persistence, and rollback demonstrations require separate verification and evidence.
 
+### Failed-Test Gate Verification
+
+The deployment gate was tested using Jenkins Build #8. A temporary intentional failure (`exit 1`) was added after the existing frontend checks in the Test stage. Jenkins correctly marked the Test stage as failed and skipped Build Images, Deploy, and Smoke Test. This verified that a failed test prevents the pipeline from proceeding to deployment. The temporary failure was removed after verification.
+
+Evidence: Jenkins Build #8 Stage View and Test stage console log.
+
 ## Data Persistence and Rollback
 
 PostgreSQL should use a named Docker volume to preserve data when database containers are recreated.
