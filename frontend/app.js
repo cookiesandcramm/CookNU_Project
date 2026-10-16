@@ -956,7 +956,7 @@ document.getElementById('detailEditBtn').addEventListener('click', () => {
 
   document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('selected'));
   document.getElementById('newCategory').value = '';
-document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('selected'));
+  document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('selected'));
 
   lucide.createIcons();
 
