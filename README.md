@@ -1,45 +1,280 @@
-# Cook'N U — cleaned VS Code project
+# Cook'N U — Recipe Management System
 
-## What changed
-- `frontend/index.html`: page structure only.
-- `frontend/app.css`: styles moved out of the HTML.
-- `frontend/app.js`: original Firebase/application module JavaScript.
-- `frontend/ui.js`: small bottom-page UI script.
-- `frontend/Dockerfile` and `.dockerignore`: frontend container.
-- `proxy/`: Nginx reverse proxy.
-- `docker-compose.yml`: local frontend + proxy stack.
-- `infra/jenkins/`: Jenkins Docker setup, separate from the app.
-- `Jenkinsfile`: Checkout, Test, Build Images, Deploy, Smoke Test stages.
+## Project Overview
 
-## Run the site locally
-Open this folder in VS Code and use Live Server on `frontend/index.html`, or use Docker:
-```bash
-docker compose up -d --build
+Cook'N U is a web-based recipe management application. The project demonstrates how frontend and backend services, a PostgreSQL database, Docker containers, an Nginx reverse proxy, and Jenkins CI/CD can work together to deliver and maintain a web application.
+
+This project is developed for the SYSIN Final Project, focusing on containerization, automated testing, deployment, data persistence, and recovery.
+
+## Architecture
+
+The application uses separate containers for the frontend, backend, reverse proxy, and PostgreSQL database. Jenkins runs separately from the main application stack and manages the CI/CD pipeline.
+
+### Architecture Diagram
+
+See [`docs/architecture.png`](docs/architecture.png) for the project architecture diagram.
+
+### Components
+
+| Component | Purpose |
+|---|---|
+| Frontend | Provides the user interface for viewing and interacting with recipes. |
+| Backend | Handles application requests and database communication. |
+| Nginx Reverse Proxy | Provides a single entry point and routes requests to the appropriate service. |
+| PostgreSQL | Stores application data persistently. |
+| Docker Compose | Defines and coordinates the application containers, networking, and storage. |
+| Jenkins | Automates source checkout, testing, image building, deployment, and smoke testing. |
+| GitHub | Hosts the source code and tracks project changes. |
+
+### Request Flow
+
+1. The user accesses the application through the browser at `http://localhost:8080`.
+2. Nginx receives the request through the published application port.
+3. Requests for the web interface are forwarded to the frontend.
+4. API requests are forwarded to the backend according to the proxy configuration.
+5. The backend communicates with PostgreSQL when database operations are required.
+6. Jenkins checks the source repository and executes the configured pipeline when changes are detected.
+
+## Technology Stack
+
+- HTML, CSS, and JavaScript — frontend.
+- Node.js — backend runtime.
+- Nginx — reverse proxy.
+- PostgreSQL — relational database.
+- Docker and Docker Compose — containerization and service orchestration.
+- Jenkins — continuous integration and deployment.
+- Git and GitHub — version control and source code hosting.
+
+## Project Structure
+
+```text
+CookNU_Project/
+├── frontend/
+│   ├── index.html
+│   ├── app.css
+│   ├── app.js
+│   ├── ui.js
+│   ├── Dockerfile
+│   └── .dockerignore
+├── backend/
+├── proxy/
+│   └── nginx.conf
+├── infra/
+│   └── jenkins/
+├── docs/
+│   ├── architecture.md
+│   └── architecture.png
+├── docker-compose.yml
+├── Jenkinsfile
+├── .env.example
+├── .gitignore
+└── README.md
 ```
-Then open http://localhost:8080.
 
-## Start Jenkins (Docker Desktop / Docker Engine required)
-From the repository root:
+*Note: The structure above summarizes the main project files. Individual folders may contain additional files.*
+
+## Prerequisites
+
+Before running the project, install:
+
+- Docker Desktop with the Docker Engine running.
+- Git.
+- A modern web browser.
+- Visual Studio Code (recommended for editing the project).
+
+Verify your installations:
+
+```bash
+docker version
+docker compose version
+git --version
+```
+
+## Environment Configuration
+
+1. Open the project root directory.
+2. If `.env` does not exist, create it using `.env.example` as a reference.
+3. Configure the required database and application environment variables according to the Compose configuration.
+4. Keep actual passwords and private credentials in local environment files or Jenkins Credentials.
+
+Do not commit `.env` or expose real passwords in the repository. The `.env.example` file should contain placeholders, not actual secrets.
+
+## Running the Application Locally
+
+### Option 1: VS Code Live Server
+
+For frontend-only development, open `frontend/index.html` and launch it with the Live Server extension.
+
+Some features that require backend services, API routing, or the production-like proxy may not work correctly when the frontend is opened directly through Live Server.
+
+### Option 2: Docker Compose
+
+From the repository root, run:
+
+```bash
+docker compose -p cooknu_project up -d --build
+```
+
+Check the containers:
+
+```bash
+docker compose -p cooknu_project ps
+```
+
+Open the application:
+
+**http://localhost:8080**
+
+Verify that the page loads, existing recipes are visible, and opening a recipe works.
+
+### Viewing Logs
+
+```bash
+docker compose -p cooknu_project logs -f
+```
+
+Press `Ctrl+C` to stop following the logs. The containers continue running.
+
+### Stopping the Application
+
+```bash
+docker compose -p cooknu_project down
+```
+
+This stops and removes the Compose-managed containers and network but normally preserves the named database volume.
+
+Do not use `docker compose down -v` when you need to preserve database data.
+
+## Jenkins Setup
+
+Jenkins is configured separately from the main application stack using the files in `infra/jenkins/`.
+
+### Start Jenkins
+
+Make sure Docker Desktop or the Docker Engine is running. From the repository root, run:
+
 ```bash
 cd infra/jenkins
 docker compose up -d --build
+```
+
+Retrieve the initial administrator password if Jenkins has not yet been initialized:
+
+```bash
 docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
 ```
-Open http://localhost:8081, unlock Jenkins, install suggested plugins and install **Docker Pipeline**. Create an admin account.
 
-Return to the root application folder for app commands:
-```bash
-docker compose ps
-docker compose down
+Open Jenkins:
+
+**http://localhost:8081**
+
+Follow the initial setup instructions, install the recommended plugins, install the Docker Pipeline plugin if needed, and create an administrator account.
+
+Jenkins uses persistent storage for its home directory so its configuration and job data can survive container restarts.
+
+## Jenkins Pipeline Configuration
+
+The pipeline is defined in the root `Jenkinsfile`.
+
+Create a Jenkins Pipeline job with these settings:
+
+- **Job name:** `CookNU-Pipeline`
+- **Definition:** Pipeline script from SCM
+- **SCM:** Git
+- **Repository URL:** `https://github.com/cookiesandcramm/CookNU_Project.git`
+- **Branch:** `*/main`
+- **Script path:** `Jenkinsfile`
+
+If the repository is private, configure the required Git credentials in Jenkins.
+
+The database password credential is configured in Jenkins as `cooknu-postgres-password`. Store secret values in Jenkins Credentials instead of hardcoding them in the Jenkinsfile.
+
+### Pipeline Stages
+
+The Jenkinsfile defines the following stages:
+
+1. **Checkout** — Retrieves the source code from the configured Git repository.
+2. **Test** — Performs the currently configured frontend file and HTML-reference checks.
+3. **Build Images** — Builds the Docker images for the configured services.
+4. **Deploy** — Updates the application stack using Docker Compose.
+5. **Smoke Test** — Checks whether the application responds through the reverse proxy.
+
+Jenkins reports the build result after the pipeline completes.
+
+### Automatic Pipeline Trigger
+
+The Jenkinsfile configures Poll SCM:
+
+```groovy
+triggers {
+    pollSCM('H/2 * * * *')
+}
 ```
 
-## Jenkins job
-Create a Pipeline job configured as **Pipeline script from SCM**, select your Git repository and branch, and set Script Path to `Jenkinsfile`. Configure Git credentials in Jenkins if the repository is private. The Jenkinsfile uses Poll SCM every two minutes as a fallback; for a webhook, configure the Git provider and enable the matching webhook trigger in the job.
+This tells Jenkins to check the repository approximately every two minutes, subject to Jenkins scheduling.
 
-## Important limitations to finish as a group
-This starter is not yet the complete final-project specification. The PDF requires at least **three application modules**, a database with a named persistent volume, at least one backend `/health` endpoint, automated backend tests that gate deployment, and rollback proof. This starter currently packages the existing frontend and a proxy only. Add your team's backend/database services, health checks, tests, and route rules to `docker-compose.yml` and `proxy/nginx.conf` before submission.
+To verify automatic triggering:
 
-The existing frontend contains Firebase configuration and an EmailJS public key. Do not commit private server credentials or passwords. Firebase web API keys are commonly client-visible, but review Firebase Security Rules and provider restrictions. Rotate any secret credentials if private credentials were accidentally exposed.
+1. Make a small, visible change to a tracked project file.
+2. Commit and push the change to the `main` branch.
+3. Do not click **Build Now**.
+4. Wait for Jenkins to detect the new commit.
+5. Confirm that a new pipeline build starts automatically.
+6. Verify that the updated version is deployed.
 
-## Jenkins Docker socket warning
-Mounting `/var/run/docker.sock` and running Jenkins as root gives Jenkins powerful control over the host's Docker daemon. The course PDF permits this for a classroom lab only. Do not use this setup as-is for a production environment.
+A successful manual build does not, by itself, prove that automatic triggering is working.
+
+## Testing and Quality Assurance
+
+The current pipeline includes basic frontend checks and an HTTP smoke test.
+
+The following checks should be completed and documented before final submission:
+
+- Verify that the frontend loads through the reverse proxy.
+- Verify that recipe viewing works.
+- Verify backend health and database connectivity.
+- Confirm that database records persist after a normal restart or redeployment.
+- Demonstrate that a failing automated test blocks deployment.
+- Confirm that the previously running application remains available when a test fails.
+- Demonstrate rollback to a previously built image version.
+
+**Current limitation:** The existing Test stage checks frontend files and HTML references. These checks should not be described as a complete automated test suite. The failing-test gate, persistence, and rollback demonstrations require separate verification and evidence.
+
+## Data Persistence and Rollback
+
+PostgreSQL should use a named Docker volume to preserve data when database containers are recreated.
+
+To verify persistence, create or update a recipe, restart or redeploy the application without deleting the database volume, and confirm that the data remains available.
+
+For rollback, use a previously built image tag and the team's tested recovery procedure. Record the commands, outcome, and supporting screenshots in the technical documentation.
+
+## Team Members and Responsibilities
+
+Replace the placeholders with your actual team members and their assigned roles.
+
+| Team Member | Role | Responsibilities |
+|---|---|---|
+| [Alex Von Flue] | Project Lead / Scrum Master | Coordinates the team, tracks progress, and organizes the project demonstration. |
+| [Alex Von Flue] | DevOps / CI-CD Engineer | Configures Jenkins, pipeline automation, credentials, and triggers. |
+| [Katleen Nachor] | Infrastructure Engineer | Manages Dockerfiles, Compose services, networking, volumes, and health checks. |
+| [Rhian Mortega] | Backend and Database Engineer | Handles backend functionality, database integration, and backend testing. |
+| [Lyanna Ramos] | Frontend, QA, and Documentation Lead | Maintains the frontend, verifies application behavior, supports testing, maintains the README and technical documentation, and prepares presentation slides. |
+
+## Security Considerations
+
+- Do not commit passwords, private credentials, or other secrets.
+- Keep `.env` excluded from version control.
+- Use Jenkins Credentials to provide secrets to pipeline jobs.
+- Review Firebase Security Rules and provider restrictions for client-side Firebase configuration.
+- Treat public client-side keys differently from private server credentials, but never assume that a client-visible key protects the underlying data.
+- Mounting the Docker socket into Jenkins grants powerful control over the Docker host. This setup should only be used in the controlled classroom environment described by the project guide, not as a production security configuration.
+
+## Project Status
+
+The application has been run locally, and a Jenkins pipeline build has completed successfully.
+
+Automatic triggering, comprehensive automated tests that block deployment, database persistence evidence, and rollback evidence must be verified and documented before the project is considered fully compliant with the final-project requirements.
+
+## Repository
+
+GitHub: https://github.com/cookiesandcramm/CookNU_Project
