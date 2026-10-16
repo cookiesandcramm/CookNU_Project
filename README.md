@@ -258,6 +258,17 @@ To verify persistence, create or update a recipe, restart or redeploy the applic
 
 For rollback, use a previously built image tag and the team's tested recovery procedure. Record the commands, outcome, and supporting screenshots in the technical documentation.
 
+### Rollback Verification
+
+The application was switched from image tag `:9` to `:7` using Docker Compose. The frontend, backend, reverse proxy, and database were healthy after the rollback. The existing named database volume was retained. Browser functionality and previously saved recipe data were checked after deployment.
+
+**Evidence:**
+- `docs/screenshots/rollback-build7-containers.png` — container health and image tags.
+- `docs/screenshots/rollback-build7-app.png` — application running after rollback.
+- `docs/screenshots/rollback-build7-recipes.png` — previously saved recipes after rollback.
+
+*Note: Confirm application functionality and data persistence before reporting these checks as passed.*
+
 ## Team Members and Responsibilities
 
 Replace the placeholders with your actual team members and their assigned roles.
