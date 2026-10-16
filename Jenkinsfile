@@ -36,17 +36,19 @@ pipeline {
             }
         }
 
-        stage('Build Images') {
-            steps {
-                sh 'TAG=$TAG docker compose -f "$COMPOSE_FILE" build'
-            }
-        }
+        
+stage('Build Images') {
+    steps {
+        sh 'TAG=$TAG docker compose -p cooknu_project -f "$COMPOSE_FILE" build'
+    }
+}
 
-        stage('Deploy') {
-            steps {
-                sh 'TAG=$TAG docker compose -f "$COMPOSE_FILE" up -d --remove-orphans'
-            }
-        }
+stage('Deploy') {
+    steps {
+        sh 'TAG=$TAG docker compose -p cooknu_project -f "$COMPOSE_FILE" up -d --remove-orphans'
+    }
+}
+
 
         stage('Smoke Test') {
             steps {
