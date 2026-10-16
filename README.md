@@ -224,6 +224,10 @@ To verify automatic triggering:
 
 A successful manual build does not, by itself, prove that automatic triggering is working.
 
+**Automatic Trigger Verification Result**
+
+Jenkins Poll SCM was verified successfully. After commit `c2132be` (`Test automatic Jenkins trigger`) was pushed to the `main` branch, Jenkins detected the change and automatically started Build #6 without manually selecting **Build Now**. The build details showed **Started by an SCM change**, and the pipeline completed with **SUCCESS**.
+
 ## Testing and Quality Assurance
 
 The current pipeline includes basic frontend checks and an HTTP smoke test.
@@ -279,4 +283,3 @@ Automatic triggering, comprehensive automated tests that block deployment, datab
 
 GitHub: https://github.com/cookiesandcramm/CookNU_Project
 
-<!-- Jenkins automatic trigger verification -->
