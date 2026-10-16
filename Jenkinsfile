@@ -32,9 +32,6 @@ pipeline {
                     test -s frontend/ui.js
                     grep -q 'app.css' frontend/index.html
                     grep -q 'app.js' frontend/index.html
-
-                    echo "Intentional failure test: verifying deployment gate."
-                    exit 1
                 '''
             }
         }
