@@ -32,6 +32,8 @@ pipeline {
                     test -s frontend/ui.js
                     grep -q 'app.css' frontend/index.html
                     grep -q 'app.js' frontend/index.html
+                    #Intentional failure for demo
+                    test -f frontend/FILE_THAT_DOES_NOT_EXIST 
                 '''
             }
         }
